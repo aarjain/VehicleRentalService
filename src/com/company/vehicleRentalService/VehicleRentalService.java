@@ -1,21 +1,22 @@
 package com.company.vehicleRentalService;
 
-import com.company.bookingmanager.BookingManager;
-import com.company.bookingmanager.LowestPriceBookingStrategy;
-import com.company.branchmanager.BranchManager;
+import com.company.bookingservice.BookingService;
+import com.company.bookingservice.LowestPriceBookingStrategy;
+import com.company.branchservice.BranchService;
 import com.company.dto.vehicle.Vehicle;
 import com.company.dto.vehicle.VehicleType;
-import com.company.inventorymanager.InventoryManager;
-import com.company.pricemanager.PriceManager;
+import com.company.inventoryservice.InventoryService;
+import com.company.pricingservice.PricingService;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 public class VehicleRentalService {
     private static VehicleRentalService instance = null;
-    BranchManager branchManager = BranchManager.getInstance();
-    InventoryManager inventoryManager = InventoryManager.getInstance();
-    PriceManager priceManager = PriceManager.getInstance();
-    BookingManager bookingManager = BookingManager.getInstance();
+    BranchService branchService = BranchService.getInstance();
+    InventoryService inventoryService = InventoryService.getInstance();
+    PricingService pricingService = PricingService.getInstance();
+    BookingService bookingService = BookingService.getInstance();
     private VehicleRentalService(){}
     public static VehicleRentalService getInstance() {
         if(instance == null)
@@ -24,28 +25,25 @@ public class VehicleRentalService {
             return instance;
     }
     public void addBranch(String branchName) {
-        branchManager.addBranch(branchName);
+        branchService.addBranch(branchName);
     }
     public void addVehicle(String licenseNumber, VehicleType vehicleType, String branchName) {
-        if(branchManager.getBranchIfExists(branchName) == null)
+        if(branchService.getBranchIfExists(branchName).isEmpty())
             throw new RuntimeException("Illegal Branch Name Supplied!");
-        inventoryManager.addVehicle(licenseNumber,vehicleType,branchName);
+        inventoryService.addVehicle(licenseNumber,vehicleType,branchName);
     }
 
     public void allocatePrice(String branchName, VehicleType vehicleType, int price) {
-        priceManager.allocatePrice(branchName,vehicleType,price);
+        pricingService.allocatePrice(branchName,vehicleType,price);
     }
 
-    public Vehicle bookVehicle(VehicleType vehicleType, LocalDateTime startTime, LocalDateTime endTime) {
-        Vehicle bookedVehicle =  bookingManager.bookBestAvailableVehicle(
+    public Optional<Vehicle> bookVehicle(VehicleType vehicleType, LocalDateTime startTime, LocalDateTime endTime) {
+        return bookingService.bookBestAvailableVehicle(
                 vehicleType,startTime,endTime,new LowestPriceBookingStrategy());
-        if(bookedVehicle!=null)
-            System.out.println("Vehicle Booked: "+bookedVehicle.getLicenseNumber()+" "+bookedVehicle.getBranch());
-        return bookedVehicle;
     }
 
     public void viewInventory(LocalDateTime startTime, LocalDateTime endTime) {
-        inventoryManager.viewInventory(startTime,endTime);
+        inventoryService.viewInventory(startTime,endTime);
     }
 
 }

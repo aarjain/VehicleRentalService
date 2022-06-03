@@ -1,18 +1,19 @@
 package com.company.dto.vehicle;
 
+import com.company.bookingservice.data.BookingData;
 import com.company.dto.booking.Booking;
-import com.company.pricemanager.PriceManager;
+import com.company.pricingservice.PricingService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Vehicle {
     VehicleType vehicleType;
     String licenseNumber;
     String branch;
-    List<Booking> bookings = new ArrayList<>();
+    BookingData bookingData = new BookingData();
     public VehicleStatus getVehicleStatusInTimeSlot(LocalDateTime startTime, LocalDateTime endTime) {
+        List<Booking> bookings = bookingData.getBookingsForVehicle(this);
         for(Booking booking: bookings) {
             if(startTime.isAfter(booking.getStartTime()) && startTime.isBefore( booking.getEndTime()) ||
                     endTime.isAfter(booking.getStartTime()) && endTime.isBefore(booking.getEndTime())) {
@@ -22,10 +23,10 @@ public abstract class Vehicle {
         return VehicleStatus.AVAILABLE;
     }
     public void addBooking(Booking booking) {
-        bookings.add(booking);
+        bookingData.addBookingsForVehicle(this,booking);
     }
     public int getPrice() {
-        return PriceManager.getInstance().getPrice(vehicleType,branch);
+        return PricingService.getInstance().getPrice(vehicleType,branch);
     }
     public String getLicenseNumber() {
         return licenseNumber;
